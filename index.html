@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodePlayground - Interactive Web Code Editor</title>
+    <style>
+        :root {
+            --primary: #2d3e50;
+            --secondary: #42b983;
+            --dark: #1a1a1a;
+            --light: #f9f9f9;
+            --gray: #e8e8e8;
+            --error: #ff5252;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo-icon {
+            font-size: 1.8rem;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background-color: var(--secondary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #359c6d;
+        }
+        
+        .btn-secondary {
+            background-color: transparent;
+            border: 1px solid white;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .container {
+            display: flex;
+            height: calc(100vh - 64px);
+        }
+        
+        .editor-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--gray);
+        }
+        
+        .editor-header {
+            padding: 10px 15px;
+            background-color: var(--gray);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .editor-tabs {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .editor-tab {
+            padding: 5px 10px;
+            border-radius: 4px 4px 0 0;
+            background-color: #ddd;
+            cursor: pointer;
+        }
+        
+        .editor-tab.active {
+            background-color: white;
+        }
+        
+        .code-editor {
+            flex: 1;
+            padding: 0;
+            overflow: auto;
+        }
+        
+        .editor {
+            width: 100%;
+            height: 100%;
+            padding: 15px;
+            border: none;
+            resize: none;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .preview-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .preview-header {
+            padding: 10px 15px;
+            background-color: var(--gray);
+        }
+        
+        .preview {
+            flex: 1;
+            padding: 20px;
+            overflow: auto;
+            background-color: white;
+        }
+        
+        .footer {
+            padding: 15px;
+            text-align: center;
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .editor-panel {
+                height: 50%;
+                border-right: none;
+                border-bottom: 1px solid var(--gray);
+            }
+        }
+        
+        /* Syntax highlighting */
+        .html-code { color: #e44b23; }
+        .css-code { color: #563d7c; }
+        .js-code { color: #f7df1e; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <span class="logo-icon">{ }</span>
+            <h1>CodePlayground</h1>
+        </div>
+        <div class="controls">
+            <button class="btn-secondary" id="save-btn">Save</button>
+            <button class="btn-primary" id="run-btn">Run</button>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="editor-panel">
+            <div class="editor-header">
+                <div class="editor-tabs">
+                    <div class="editor-tab active" data-target="html-editor">HTML</div>
+                    <div class="editor-tab" data-target="css-editor">CSS</div>
+                    <div class="editor-tab" data-target="js-editor">JavaScript</div>
+                </div>
+            </div>
+            <div class="code-editor">
+                <textarea id="html-editor" class="editor" placeholder="Write your HTML here">&lt;!-- Welcome to CodePlayground --&gt;
+&lt;div class="container"&gt;
+  &lt;h1&gt;Hello, World!&lt;/h1&gt;
+  &lt;p&gt;This is an interactive code playground.&lt;/p&gt;
+  &lt;button id="demo-btn"&gt;Click Me!&lt;/button&gt;
+&lt;/div&gt;</textarea>
+                <textarea id="css-editor" class="editor" placeholder="Write your CSS here" style="display: none;">/* Add your styles here */
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f5f5f5;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 2rem;
+}
+
+h1 {
+  color: #2d3e50;
+  margin-bottom: 1rem;
+}
+
+p {
+  color: #666;
+  margin-bottom: 2rem;
+}
+
+#demo-btn {
+  background-color: #42b983;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+#demo-btn:hover {
+  background-color: #359c6d;
+}</textarea>
+                <textarea id="js-editor" class="editor" placeholder="Write your JavaScript here" style="display: none;">// Add your JavaScript here
+document.getElementById('demo-btn').addEventListener('click', function() {
+  alert('Hello from CodePlayground!');
+});</textarea>
+            </div>
+        </div>
+        
+        <div class="preview-panel">
+            <div class="preview-header">
+                <h3>Preview</h3>
+            </div>
+            <div class="preview" id="preview">
+                <!-- Preview will be rendered here -->
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>CodePlayground &copy; 2023 - A unique web application for GitHub</p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get DOM elements
+            const htmlEditor = document.getElementById('html-editor');
+            const cssEditor = document.getElementById('css-editor');
+            const jsEditor = document.getElementById('js-editor');
+            const preview = document.getElementById('preview');
+            const runBtn = document.getElementById('run-btn');
+            const saveBtn = document.getElementById('save-btn');
+            const editorTabs = document.querySelectorAll('.editor-tab');
+            
+            // Update preview function
+            function updatePreview() {
+                const htmlCode = htmlEditor.value;
+                const cssCode = '<style>' + cssEditor.value + '</style>';
+                const jsCode = '<script>' + jsEditor.value + '<\/script>';
+                
+                preview.innerHTML = cssCode + htmlCode + jsCode;
+            }
+            
+            // Run button event listener
+            runBtn.addEventListener('click', updatePreview);
+            
+            // Save project function
+            saveBtn.addEventListener('click', function() {
+                const project = {
+                    html: htmlEditor.value,
+                    css: cssEditor.value,
+                    js: jsEditor.value,
+                    date: new Date().toISOString()
+                };
+                
+                localStorage.setItem('codePlaygroundProject', JSON.stringify(project));
+                alert('Project saved successfully!');
+            });
+            
+            // Load saved project if exists
+            const savedProject = localStorage.getItem('codePlaygroundProject');
+            if (savedProject) {
+                const project = JSON.parse(savedProject);
+                htmlEditor.value = project.html;
+                cssEditor.value = project.css;
+                jsEditor.value = project.js;
+                updatePreview();
+            } else {
+                updatePreview(); // Initial preview
+            }
+            
+            // Tab switching functionality
+            editorTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const target = this.getAttribute('data-target');
+                    
+                    // Hide all editors
+                    document.querySelectorAll('.editor').forEach(editor => {
+                        editor.style.display = 'none';
+                    });
+                    
+                    // Show selected editor
+                    document.getElementById(target).style.display = 'block';
+                    
+                    // Update active tab
+                    editorTabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+            
+            // Add basic syntax highlighting on input
+            function applySyntaxHighlighting() {
+                // This is a simplified version - in a real app you'd use a library like Prism.js
+                const htmlCode = htmlEditor.value;
+                const cssCode = cssEditor.value;
+                const jsCode = jsEditor.value;
+                
+                // Basic highlighting for demonstration
+                htmlEditor.innerHTML = htmlCode.replace(/&lt;(\/?\w+)&gt;/g, '&lt;<span class="html-code">$1</span>&gt;');
+                cssEditor.innerHTML = cssCode.replace(/([\.\#][\w\-]+)/g, '<span class="css-code">$1</span>');
+                jsEditor.innerHTML = jsCode.replace(/(function|var|let|const|if|else|for|while)/g, '<span class="js-code">$1</span>');
+            }
+            
+            // Listen for input events
+            [htmlEditor, cssEditor, jsEditor].forEach(editor => {
+                editor.addEventListener('input', applySyntaxHighlighting);
+            });
+            
+            // Initialize syntax highlighting
+            applySyntaxHighlighting();
+        });
+    </script>
+</body>
+</html>
